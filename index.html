@@ -1,0 +1,338 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Scheduler - GitHub Pages</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-share-alt"></i> Social Media Scheduler</h1>
+            <p>Poste automaticamente via GitHub Actions</p>
+            <div class="auth-status" id="authStatus">
+                <span id="connectionStatus">Verificando conexões...</span>
+            </div>
+        </header>
+
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <h2><i class="fas fa-key"></i> Configuração de APIs</h2>
+            <p class="info-text">Configure suas credenciais para cada plataforma. Os dados são salvos localmente e enviados para o GitHub.</p>
+            
+            <div class="platform-auth">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fab fa-instagram"></i>
+                        <h3>Instagram</h3>
+                        <span class="status-indicator" id="instagramStatus">❌</span>
+                    </div>
+                    <div class="auth-fields">
+                        <input type="text" id="instagramToken" placeholder="Access Token">
+                        <input type="text" id="instagramAccountId" placeholder="Business Account ID">
+                        <button onclick="testConnection('instagram')" class="test-btn">Testar</button>
+                    </div>
+                </div>
+
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fab fa-tiktok"></i>
+                        <h3>TikTok</h3>
+                        <span class="status-indicator" id="tiktokStatus">❌</span>
+                    </div>
+                    <div class="auth-fields">
+                        <input type="text" id="tiktokToken" placeholder="Access Token">
+                        <input type="text" id="tiktokClientKey" placeholder="Client Key">
+                        <button onclick="testConnection('tiktok')" class="test-btn">Testar</button>
+                    </div>
+                </div>
+
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fab fa-youtube"></i>
+                        <h3>YouTube</h3>
+                        <span class="status-indicator" id="youtubeStatus">❌</span>
+                    </div>
+                    <div class="auth-fields">
+                        <input type="text" id="youtubeClientId" placeholder="Client ID">
+                        <input type="text" id="youtubeClientSecret" placeholder="Client Secret">
+                        <button onclick="authenticateYouTube()" class="test-btn">Autenticar</button>
+                    </div>
+                </div>
+
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fab fa-twitter"></i>
+                        <h3>Twitter/X</h3>
+                        <span class="status-indicator" id="twitterStatus">❌</span>
+                    </div>
+                    <div class="auth-fields">
+                        <input type="text" id="twitterClientId" placeholder="Client ID">
+                        <input type="text" id="twitterClientSecret" placeholder="Client Secret">
+                        <button onclick="authenticateTwitter()" class="test-btn">Autenticar</button>
+                    </div>
+                </div>
+
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <i class="fab fa-facebook"></i>
+                        <h3>Facebook</h3>
+                        <span class="status-indicator" id="facebookStatus">❌</span>
+                    </div>
+                    <div class="auth-fields">
+                        <input type="text" id="facebookToken" placeholder="Access Token">
+                        <input type="text" id="facebookPageId" placeholder="Page ID">
+                        <button onclick="testConnection('facebook')" class="test-btn">Testar</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="saveAllCredentials()" class="save-credentials-btn">
+                <i class="fas fa-save"></i> Salvar Credenciais
+            </button>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2><i class="fas fa-upload"></i> Upload de Mídia</h2>
+            <div class="upload-area" id="uploadArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Arraste arquivos aqui ou clique para selecionar</p>
+                <input type="file" id="mediaInput" multiple accept="image/*,video/*" hidden>
+            </div>
+            <div id="mediaPreview" class="media-preview"></div>
+        </div>
+
+        <!-- Post Configuration -->
+        <div class="post-config">
+            <h2><i class="fas fa-cog"></i> Configuração do Post</h2>
+            
+            <form id="postForm">
+                <div class="form-group">
+                    <label for="postTitle">Título (opcional):</label>
+                    <input type="text" id="postTitle" placeholder="Digite o título do post">
+                </div>
+
+                <div class="form-group">
+                    <label for="postDescription">Descrição:</label>
+                    <textarea id="postDescription" placeholder="Digite a descrição/legenda do post" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="hashtags">Hashtags:</label>
+                    <input type="text" id="hashtags" placeholder="#exemplo #hashtag #viral">
+                </div>
+
+                <div class="form-group">
+                    <label for="musicTrack">Música (opcional):</label>
+                    <input type="text" id="musicTrack" placeholder="Nome da música ou link do Spotify">
+                </div>
+
+                <!-- Platform Selection -->
+                <div class="platform-selection">
+                    <h3>Selecione as Plataformas:</h3>
+                    
+                    <div class="platform-grid">
+                        <div class="platform-card">
+                            <div class="platform-header">
+                                <input type="checkbox" id="instagram" class="platform-checkbox">
+                                <label for="instagram">
+                                    <i class="fab fa-instagram"></i> Instagram
+                                </label>
+                            </div>
+                            <div class="platform-options" id="instagramOptions" style="display: none;">
+                                <select id="instagramFormat">
+                                    <option value="feed">Feed Post</option>
+                                    <option value="reels">Reels</option>
+                                    <option value="stories">Stories</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="platform-card">
+                            <div class="platform-header">
+                                <input type="checkbox" id="tiktok" class="platform-checkbox">
+                                <label for="tiktok">
+                                    <i class="fab fa-tiktok"></i> TikTok
+                                </label>
+                            </div>
+                            <div class="platform-options" id="tiktokOptions" style="display: none;">
+                                <select id="tiktokFormat">
+                                    <option value="video">Vídeo Normal</option>
+                                    <option value="series">Série</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="platform-card">
+                            <div class="platform-header">
+                                <input type="checkbox" id="youtube" class="platform-checkbox">
+                                <label for="youtube">
+                                    <i class="fab fa-youtube"></i> YouTube
+                                </label>
+                            </div>
+                            <div class="platform-options" id="youtubeOptions" style="display: none;">
+                                <select id="youtubeFormat">
+                                    <option value="shorts">Shorts</option>
+                                    <option value="video">Vídeo</option>
+                                    <option value="community">Post da Comunidade</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="platform-card">
+                            <div class="platform-header">
+                                <input type="checkbox" id="twitter" class="platform-checkbox">
+                                <label for="twitter">
+                                    <i class="fab fa-twitter"></i> Twitter/X
+                                </label>
+                            </div>
+                            <div class="platform-options" id="twitterOptions" style="display: none;">
+                                <select id="twitterFormat">
+                                    <option value="tweet">Tweet</option>
+                                    <option value="thread">Thread</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="platform-card">
+                            <div class="platform-header">
+                                <input type="checkbox" id="facebook" class="platform-checkbox">
+                                <label for="facebook">
+                                    <i class="fab fa-facebook"></i> Facebook
+                                </label>
+                            </div>
+                            <div class="platform-options" id="facebookOptions" style="display: none;">
+                                <select id="facebookFormat">
+                                    <option value="post">Post</option>
+                                    <option value="reels">Reels</option>
+                                    <option value="story">Story</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduling -->
+                <div class="scheduling-section">
+                    <h3><i class="fas fa-calendar-alt"></i> Agendamento</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="scheduleType" value="now" checked> Postar Agora
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="radio" name="scheduleType" value="later"> Agendar Para Depois
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="scheduleDateTime" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="scheduleDate">Data:</label>
+                                <input type="date" id="scheduleDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="scheduleTime">Hora:</label>
+                                <input type="time" id="scheduleTime">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="button" id="previewBtn" class="btn-secondary">
+                        <i class="fas fa-eye"></i> Visualizar
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Criar Post/Agendar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- GitHub Integration -->
+        <div class="github-section">
+            <h2><i class="fab fa-github"></i> Integração GitHub</h2>
+            <div class="github-config">
+                <div class="form-group">
+                    <label for="githubRepo">Repositório GitHub:</label>
+                    <input type="text" id="githubRepo" placeholder="username/repository-name">
+                </div>
+                <div class="form-group">
+                    <label for="githubToken">GitHub Token:</label>
+                    <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
+                </div>
+                <button onclick="setupGitHubIntegration()" class="github-btn">
+                    <i class="fab fa-github"></i> Configurar Integração
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Section -->
+        <div class="status-section">
+            <h2><i class="fas fa-chart-line"></i> Status & Posts Agendados</h2>
+            
+            <div class="scheduled-posts" id="scheduledPosts">
+                <div class="no-posts">
+                    <i class="fas fa-calendar-check"></i>
+                    <p>Nenhum post agendado</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions-section">
+            <h2><i class="fas fa-info-circle"></i> Como Usar</h2>
+            <div class="instruction-steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <div class="step-content">
+                        <h3>Configure as APIs</h3>
+                        <p>Insira suas credenciais para cada plataforma social que deseja usar.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <div class="step-content">
+                        <h3>Configure o GitHub</h3>
+                        <p>Adicione seu repositório e token para automação via GitHub Actions.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <div class="step-content">
+                        <h3>Crie Posts</h3>
+                        <p>Faça upload de mídia, configure o conteúdo e agende seus posts.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <div class="step-content">
+                        <h3>Automação</h3>
+                        <p>O GitHub Actions executará os posts no horário agendado automaticamente.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Visualização do Post</h2>
+            <div id="previewContent"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
